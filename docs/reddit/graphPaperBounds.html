@@ -1,0 +1,192 @@
+<html>
+  <head>
+  	<meta charset = "UTF-8">
+  	<meta name="author" content="OddlySpecificMath">
+  	<meta name="date" content="2023/10/22">
+    <!-- posted to https://www.reddit.com/r/desmos/comments/17e6l6h/using_desmos_api_to_get_active_axes/ -->
+    
+    <title>Retrieve (top,bottom,left,right) boundaries for Desmos graphPaper / output panel</title>
+    <script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+    <!-- Desmos' public development apiKey; see docs for keys for production -->
+
+    <script>
+    	// send to calculator's expression by its id
+    	function doPixelCoords() {
+  			  var tmp = "";
+  			  with(calculator.graphpaperBounds.pixelCoordinates) {
+  			  	tmp += top + "," + bottom + "," + left + "," + right;
+  			  }
+  			  calculator.setExpression({
+  			  	id: 'pixelCoordinates',
+  			  	"latex": "p_{c}=\\left[" + tmp + "\\right]",
+  			  });
+    	}
+
+    	// send to calculator's expression by its id
+    	function doMathCoords() {
+  			  var tmp = "";
+  			  with(calculator.graphpaperBounds.mathCoordinates) {
+  			  	tmp += top + "," + bottom + "," + left + "," + right;
+  			  }
+  			  calculator.setExpression({
+  			  	id: 'mathCoordinates',
+  			  	"latex": "m_{c}=\\left[" + tmp + "\\right]",
+  			  });
+    	}
+
+    	// runs ~500ms after main thread is released, so calculator should be loaded by now
+    	function probablyReady() {
+    		// retrieve calculator.getState() output, saved at the bottom of this file in a script element.
+    		const elSetup = document.getElementById("initialState");
+
+    		// set the state from that
+        calculator.setState(elSetup.textContent);
+
+        // No observe() event on first load, so initialize. 
+        // If something javascripty goes awry, lists will probably stay at [0,0,0,0]
+        doPixelCoords();
+        doMathCoords();
+
+        // gets changes to axes ends / paper boundaries (pushed, better than polling)
+    	  calculator.observe('graphpaperBounds', function(){
+  	  		doPixelCoords();
+  	  		doMathCoords();
+
+  	  		// I'm only using 4 values, height and width for each are also returned.
+  	  		// see docs for more (including physical pixel vs graphbounds functions)
+
+         }); // observe
+     }; // ready func
+        
+    </script>
+  </head>
+
+  <body>
+  	<p>(read the source!) Click/tap and drag, zoom, insert an image and have it autoscale/center, etc.<br />Inspired by <a href="https://www.reddit.com/r/desmos/comments/17dhr7w/for_how_long_have_we_been_able_to_use_width_and/?utm_source=share&utm_medium=web2x&context=3">this r/desmos question</a> Here's the <a href="https://www.desmos.com/api/v1.8/docs/index.html">API documentation</a> (v1.8)</p>
+
+    <div id="calculator" style="width: 90%; height: 80%;"></div>
+  </body>
+
+
+  <script>
+    var elt = document.getElementById('calculator');
+    var  calculator = Desmos.GraphingCalculator(elt);
+ 
+    // half-second beat (releases main thread so DOM can load) before trying to hook things.
+    // Look into official ways to wait for DOM to be ready in your own projects.
+    setTimeout(probablyReady, 500);
+  </script>
+
+  <!-- from calculator.getState(); -->
+  <script type="justtext" id=initialState>{
+    "version": 10,
+    "randomSeed": "9389f23f5b0c1f2e13300d2364eb59fa",
+    "graph": {
+        "viewport": {
+            "xmin": -10,
+            "ymin": -4.099322101818303,
+            "xmax": 10,
+            "ymax": 4.099322101818303
+        }
+    },
+    "expressions": {
+        "list": [
+            {
+                "type": "expression",
+                "id": "1",
+                "color": "#c74440",
+                "latex": "p_{ixels}=\\left(\\operatorname{width},\\ \\operatorname{height}\\right)"
+            },
+            {
+                "type": "folder",
+                "id": "4",
+                "title": "graphPaperBounds\n(top, bottom, left, right)",
+                "collapsed": true
+            },
+            {
+                "type": "text",
+                "id": "9",
+                "folderId": "4",
+                "text": ".pixelCoordinates   .mathCoordinates"
+            },
+            {
+                "type": "expression",
+                "id": "pixelCoordinates",
+                "folderId": "4",
+                "color": "#6042a6",
+                "latex": "p_{c}=\\left[0,0,0,0\\right]",
+                "slider": {
+                    "hardMin": true,
+                    "hardMax": true,
+                    "min": "0",
+                    "max": "0"
+                }
+            },
+            {
+                "type": "expression",
+                "id": "mathCoordinates",
+                "folderId": "4",
+                "color": "#000000",
+                "latex": "m_{c}=\\left[0,0,0,0\\right]"
+            },
+            {
+                "type": "expression",
+                "id": "10",
+                "folderId": "4",
+                "color": "#c74440",
+                "latex": "t_{op}=m_{c}\\left[1\\right]"
+            },
+            {
+                "type": "expression",
+                "id": "11",
+                "folderId": "4",
+                "color": "#2d70b3",
+                "latex": "b_{ottom}=m_{c}\\left[2\\right]"
+            },
+            {
+                "type": "expression",
+                "id": "12",
+                "folderId": "4",
+                "color": "#388c46",
+                "latex": "l_{eft}=m_{c}\\left[3\\right]"
+            },
+            {
+                "type": "expression",
+                "id": "13",
+                "folderId": "4",
+                "color": "#6042a6",
+                "latex": "r_{ight}=m_{c}\\left[4\\right]"
+            },
+            {
+                "type": "expression",
+                "id": "14",
+                "color": "#c74440",
+                "latex": "\\left(l_{eft},t_{op}\\right)",
+                "showLabel": true
+            },
+            {
+                "type": "expression",
+                "id": "15",
+                "color": "#388c46",
+                "latex": "\\left(r_{ight},t_{op}\\right)",
+                "showLabel": true
+            },
+            {
+                "type": "expression",
+                "id": "16",
+                "color": "#2d70b3",
+                "latex": "\\left(l_{eft},b_{ottom}\\right)",
+                "showLabel": true
+            },
+            {
+                "type": "expression",
+                "id": "17",
+                "color": "#000000",
+                "latex": "\\left(r_{ight},b_{ottom}\\right)",
+                "showLabel": true
+            }
+        ]
+    }
+}  	
+  </script>
+</html>
